@@ -5,6 +5,7 @@
     "start": "bun src/index.tsx"
   },
   "dependencies": {
+    "@hono/arktype-validator": "^2.0.1",
     "@slack/web-api": "^7.11.0",
     "arktype": "^2.1.23",
     "date-fns": "^4.1.0",

@@ -3,7 +3,8 @@ import { createMiddleware } from 'hono/factory'
 import { type } from 'arktype'
 import { arktypeValidator } from '@hono/arktype-validator'
 import { db, dataTable } from './db'
-import JSXSlack, { Blocks, Divider, Header, Mrkdwn, Section } from 'jsx-slack'
+import { desc } from 'drizzle-orm'
+import JSXSlack, { Blocks, Divider, Header, Section } from 'jsx-slack'
 import { WebClient } from '@slack/web-api'
 import { formatDistance } from 'date-fns';
 
@@ -23,6 +24,7 @@ const assignment = type({
   description: 'string',
   dueDate: 'string.date.parse',
   alternateLink: 'string.url',
+  turnedIn: 'boolean',
   id: 'string',
 })
 const assignmentArray = assignment.array()
@@ -49,11 +51,11 @@ app.post('/data', requireAuth, arktypeValidator('json', assignmentArray), async 
 })
 
 app.post("/send-notification", requireAuth, async (c) => {
-  const [assignmentsRow] = await db.select().from(dataTable).orderBy(dataTable.timestamp).limit(1).all()
+  const [assignmentsRow] = await db.select().from(dataTable).orderBy(desc(dataTable.timestamp)).limit(1).all()
   if (!assignmentsRow) {
     return c.json({ error: 'No assignments found' }, 404)
   }
-  const assignments = assignmentArray.assert(assignmentsRow.data).sort((a, b) => Number(a.dueDate) - Number(b.dueDate));
+  const assignments = assignmentArray.assert(assignmentsRow.data).sort((a, b) => Number(a.dueDate) - Number(b.dueDate)).filter(a => !a.turnedIn);
   const overdueAssignments = assignments.filter(a => new Date(a.dueDate) < new Date());
   const onTimeAssignments = assignments.filter(a => new Date(a.dueDate) >= new Date());
 

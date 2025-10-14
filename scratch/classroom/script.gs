@@ -91,8 +91,8 @@ function setupFrequentTrigger() {
 
   ScriptApp.newTrigger('listDueAssignments')
     .timeBased()
-    .everyMinutes(5)
+    .everyMinutes(30)
     .create();
 
-  Logger.log('5-minute trigger set up successfully');
+  Logger.log('30-minute trigger set up successfully');
 }
